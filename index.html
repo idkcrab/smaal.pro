@@ -1,32 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Link Shortener</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>made by imcrab</title>
+  <style>
+    /* Full-page centered layout */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #0f172a 0%, #071132 100%);
+      color: white;
+    }
+
+    .wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .badge {
+      font-size: clamp(20px, 5vw, 48px); /* responsive sizing */
+      letter-spacing: 0.04em;
+      text-transform: none; /* keep original case */
+      background: rgba(255,255,255,0.04);
+      padding: 22px 36px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      user-select: none;
+    }
+
+    /* small extra: subtle hover if you want it clickable later */
+    .badge:hover { transform: translateY(-2px); transition: .18s ease; }
+  </style>
 </head>
 <body>
-  <h2>Link Shortener</h2>
-  <form id="shortenForm">
-    <input type="text" id="url" placeholder="Paste your link here" size="50" required>
-    <button type="submit">Shorten</button>
-  </form>
-
-  <p id="result"></p>
-
-  <script>
-    document.getElementById('shortenForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const url = document.getElementById('url').value;
-
-      const response = await fetch('/shorten', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `url=${encodeURIComponent(url)}`
-      });
-
-      const text = await response.text();
-      document.getElementById('result').innerHTML = text;
-    });
-  </script>
+  <div class="wrap">
+    <div class="badge">made by imcrab</div>
+  </div>
 </body>
 </html>
