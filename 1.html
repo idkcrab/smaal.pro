@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Redirecting…</title>
+
+  <!-- Meta refresh (immediate) -->
+  <meta http-equiv="refresh" content="0;url=https://discord.gg/ShBnQQwGmF">
+
+  <script>
+    // JavaScript redirect fallback (faster and better for history handling)
+    // Use replace() so the redirect doesn't remain in the browser history.
+    (function() {
+      var dest = "https://discord.gg/ShBnQQwGmF";
+      try {
+        window.location.replace(dest);
+      } catch (e) {
+        // final fallback: set href on location (less ideal)
+        window.location.href = dest;
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>If you are not redirected automatically, <a href="https://example.com">click here to go to the destination</a>.</p>
+</body>
+</html>
