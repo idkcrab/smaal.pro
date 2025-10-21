@@ -1,46 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>made by imcrab</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smaal Games</title>
   <style>
-    /* Full-page centered layout */
-    html, body {
-      height: 100%;
+    body {
       margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: linear-gradient(180deg, #0f172a 0%, #071132 100%);
-      color: white;
-    }
-
-    .wrap {
-      height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #121212;
+      color: #f5f5f5;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      padding: 60px 20px;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      color: #22d3ee;
+      margin-bottom: 60px;
+      text-transform: lowercase;
+      letter-spacing: 1px;
       text-align: center;
-      padding: 20px;
     }
 
-    .badge {
-      font-size: clamp(20px, 5vw, 48px); /* responsive sizing */
-      letter-spacing: 0.04em;
-      text-transform: none; /* keep original case */
-      background: rgba(255,255,255,0.04);
-      padding: 22px 36px;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-      user-select: none;
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      width: 100%;
+      max-width: 1100px;
     }
 
-    /* small extra: subtle hover if you want it clickable later */
-    .badge:hover { transform: translateY(-2px); transition: .18s ease; }
+    a {
+      display: block;
+      background: #1e1e1e;
+      padding: 40px;
+      border-radius: 18px;
+      text-align: center;
+      color: #22d3ee;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    a:hover {
+      background: #2a2a2a;
+      color: #8b5cf6;
+      transform: translateY(-6px);
+    }
+
+    footer {
+      margin-top: 80px;
+      font-size: 1.1rem;
+      color: #888;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="badge">made by imcrab</div>
+  <h1>smaal games</h1>
+
+  <div class="games">
+    <a href="http://smaal.pro/2048" target="_blank">2048</a>
+    <a href="http://smaal.pro/crazycattle" target="_blank">Crazy Cattle</a>
+    <a href="http://smaal.pro/crossyroad" target="_blank">Crossy Road</a>
+    <a href="http://smaal.pro/flappybird" target="_blank">Flappy Bird</a>
+    <a href="http://smaal.pro/hangman" target="_blank">Hangman</a>
+    <a href="http://smaal.pro/slope" target="_blank">Slope</a>
+    <a href="http://smaal.pro/speedtyper" target="_blank">Speed Typer</a>
+    <a href="http://smaal.pro/tetris" target="_blank">Tetris</a>
   </div>
+
+  <footer>© 2025 imcrab Games</footer>
 </body>
 </html>
