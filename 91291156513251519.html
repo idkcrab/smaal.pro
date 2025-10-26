@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GorillaSpecs</title>
+  <style>
+    :root{
+      --bg: rgba(10,10,10,0.75);
+      --card: rgba(255,255,255,0.06);
+      --accent: #8be9fd;
+      --muted: #bfc7cc;
+      --text: #e6eef3;
+      --danger: #ff6b6b;
+      --ok: #7ef58b;
+      --shadow: 0 6px 18px rgba(0,0,0,0.45);
+      --radius: 12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{height:100%;margin:0;background:var(--bg);}
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .overlay{
+      width: min(980px, 96vw);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      backdrop-filter: blur(6px) saturate(1.1);
+    }
+
+    .main{
+      flex:1;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .left{
+      width: 360px;
+      min-width: 220px;
+      background:var(--card);
+      border-radius:10px;
+      padding:12px;
+    }
+
+    .title{
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:0.2px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .meta{
+      margin-top:8px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      padding:6px 8px;
+      border-radius:8px;
+      font-size:13px;
+      background:rgba(0,0,0,0.12);
+      color:var(--muted);
+    }
+
+    .room{
+      margin-top:12px;
+      font-size:18px;
+      font-weight:600;
+      color:var(--text);
+      word-break:break-word;
+    }
+
+    .bigstatus{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .status-pill{
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:13px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .players{
+      flex:1;
+      background:transparent;
+      min-width:260px;
+      max-width:520px;
+    }
+
+    .section{
+      background:var(--card);
+      border-radius:10px;
+      padding:12px;
+    }
+
+    .players .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:8px;
+      max-height:360px;
+      overflow:auto;
+      padding-right:6px;
+    }
+
+    .player{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(0,0,0,0.06);
+      padding:8px;
+      border-radius:8px;
+      font-weight:600;
+    }
+
+    .player .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--accent);
+      box-shadow:0 1px 0 rgba(0,0,0,0.4) inset;
+    }
+
+    .muted{color:var(--muted);font-weight:500;font-size:13px}
+
+    .props-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .prop{
+      background:rgba(0,0,0,0.04);
+      padding:8px;
+      border-radius:8px;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+
+    .timestamp{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .empty{
+      opacity:0.7;
+      font-style:italic;
+    }
+
+    /* OBS transparent mode */
+    :root.transparent {
+      --bg: transparent;
+      --card: rgba(0,0,0,0.0);
+      --shadow: none;
+      --accent: #8be9fd;
+      --text: var(--text);
+    }
+
+    @media (max-width:800px){
+      .overlay{flex-direction:column;align-items:stretch}
+      .left{width:100%}
+      .players{max-width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="app">
+    <div class="main">
+      <div class="left section">
+        <div class="title">GorillaSpecs</div>
+        <div class="meta">
+          <div class="badge" id="playerCount">Players: —</div>
+          <div class="badge" id="maxPlayers">Max: —</div>
+          <div class="badge" id="visibility">—</div>
+          <div class="badge" id="modded">Modded: —</div>
+        </div>
+
+        <div class="room" id="roomName">No room</div>
+
+        <div class="bigstatus">
+          <div id="openPill" class="status-pill">—</div>
+          <div class="muted" id="modeText">—</div>
+        </div>
+
+        <div class="timestamp" id="timestamp">—</div>
+      </div>
+
+      <div class="players">
+        <div class="section">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-weight:700">Players</div>
+            <div class="muted" id="playersSubtitle">—</div>
+          </div>
+
+          <div class="list" id="playersList">
+            <div class="empty">No players</div>
+          </div>
+
+          <div style="margin-top:12px;font-weight:700">Room properties</div>
+          <div class="props-grid" id="propsGrid">
+            <div class="empty">No properties</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIG: the data endpoint to fetch the latest JSON from.
+    // By default it will use the same origin path /91291156513251519
+    // Set to an absolute URL if your server serves the viewer data somewhere else.
+    const PATH_SEGMENT = '/91291156513251519'; // change if needed
+    const DATA_URL = (location.origin + PATH_SEGMENT) || '/latest'; // tries same origin
+
+    // Poll interval (ms)
+    const POLL_MS = 1000;
+
+    // Accept ?bg=transparent to make background transparent for OBS
+    if (new URLSearchParams(location.search).get('bg') === 'transparent') {
+      document.documentElement.classList.add('transparent');
+      document.body.style.background = 'transparent';
+    }
+
+    // UI elements
+    const roomNameEl = document.getElementById('roomName');
+    const playerCountEl = document.getElementById('playerCount');
+    const maxPlayersEl = document.getElementById('maxPlayers');
+    const visibilityEl = document.getElementById('visibility');
+    const moddedEl = document.getElementById('modded');
+    const openPillEl = document.getElementById('openPill');
+    const modeTextEl = document.getElementById('modeText');
+    const timestampEl = document.getElementById('timestamp');
+    const playersListEl = document.getElementById('playersList');
+    const propsGridEl = document.getElementById('propsGrid');
+    const playersSubtitleEl = document.getElementById('playersSubtitle');
+
+    let lastPayload = null;
+
+    async function fetchLatest(){
+      try {
+        const res = await fetch(DATA_URL, {cache:'no-store'});
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        render(json);
+      } catch (err) {
+        // If fetching fails, show disconnected / fallback
+        render(null);
+      }
+    }
+
+    function render(payload){
+      if (!payload){
+        roomNameEl.textContent = 'No room';
+        playerCountEl.textContent = 'Players: —';
+        maxPlayersEl.textContent = 'Max: —';
+        visibilityEl.textContent = '—';
+        moddedEl.textContent = 'Modded: —';
+        openPillEl.textContent = '—';
+        openPillEl.style.background = '';
+        modeTextEl.textContent = 'Waiting for data';
+        timestampEl.textContent = '';
+        playersListEl.innerHTML = '<div class="empty">No players</div>';
+        propsGridEl.innerHTML = '<div class="empty">No properties</div>';
+        playersSubtitleEl.textContent = '—';
+        return;
+      }
+
+      lastPayload = payload;
+
+      const {
+        roomName = '',
+        joined = false,
+        playerCount = 0,
+        maxPlayers = 0,
+        isOpen = false,
+        isVisible = false,
+        players = [],
+        moddedHeuristic = 'unknown',
+        customRoomProperties = {},
+        timestamp = null
+      } = payload;
+
+      roomNameEl.textContent = roomName || (joined ? '(unnamed room)' : 'Not in a room');
+      playerCountEl.textContent = 'Players: ' + playerCount;
+      maxPlayersEl.textContent = 'Max: ' + (maxPlayers || '—');
+      visibilityEl.textContent = (isVisible ? 'Visible' : 'Hidden');
+      moddedEl.textContent = 'Modded: ' + (moddedHeuristic || 'unknown');
+
+      openPillEl.textContent = isOpen ? 'Open' : 'Closed';
+      openPillEl.style.background = isOpen ? 'linear-gradient(90deg,var(--ok), #38d38a22)' : 'linear-gradient(90deg,var(--danger), #ff8b8b22)';
+
+      // modeText: try to show a likely mode or custom property like "mode" or "map"
+      let modeHint = '—';
+      if (customRoomProperties && typeof customRoomProperties === 'object') {
+        if (customRoomProperties.mode) modeHint = customRoomProperties.mode;
+        else if (customRoomProperties.map) modeHint = customRoomProperties.map;
+        else if (customRoomProperties.game) modeHint = customRoomProperties.game;
+      }
+      modeTextEl.textContent = modeHint;
+
+      // timestamp formatting
+      if (timestamp){
+        let date = (typeof timestamp === 'number') ? new Date(timestamp * 1000) : new Date(timestamp);
+        timestampEl.textContent = 'Updated: ' + date.toLocaleString();
+      } else timestampEl.textContent = '';
+
+      // players list
+      playersListEl.innerHTML = '';
+      if (Array.isArray(players) && players.length > 0){
+        playersSubtitleEl.textContent = players.length + (maxPlayers ? ` / ${maxPlayers}` : '');
+        for (let i=0;i<players.length;i++){
+          const name = players[i] || ('Player ' + (i+1));
+          const node = document.createElement('div');
+          node.className = 'player';
+          node.innerHTML = `<div class="dot"></div><div>${escapeHtml(name)}</div>`;
+          playersListEl.appendChild(node);
+        }
+      } else {
+        playersListEl.innerHTML = '<div class="empty">No players</div>';
+        playersSubtitleEl.textContent = '—';
+      }
+
+      // room properties (customRoomProperties may be an object or array of entries)
+      propsGridEl.innerHTML = '';
+      let entries = [];
+      if (!customRoomProperties) { entries = []; }
+      else if (Array.isArray(customRoomProperties)) {
+        // array of {key,value} form
+        entries = customRoomProperties.map(e => [e.key,e.value]);
+      } else if (typeof customRoomProperties === 'object') {
+        entries = Object.entries(customRoomProperties);
+      }
+
+      if (entries.length === 0) {
+        propsGridEl.innerHTML = '<div class="empty">No properties</div>';
+      } else {
+        entries.forEach(([k,v])=>{
+          const el = document.createElement('div');
+          el.className = 'prop';
+          el.innerHTML = `<div class="muted">${escapeHtml(k)}</div><div>${escapeHtml(String(v))}</div>`;
+          propsGridEl.appendChild(el);
+        });
+      }
+    }
+
+    function escapeHtml(s){
+      return s
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    // start polling
+    fetchLatest();
+    setInterval(fetchLatest, POLL_MS);
+
+    // optional: support manual POSTed updates via BroadcastChannel (if same origin page posts)
+    try {
+      const bc = new BroadcastChannel('gorillaspecs-updates');
+      bc.onmessage = (ev) => {
+        if (ev.data) render(ev.data);
+      };
+    } catch(e){/*ignore*/}
+
+    // expose last payload to console for quick debugging
+    window.GorillaSpecs = {
+      get last(){ return lastPayload; }
+    };
+  </script>
+</body>
+</html>
