@@ -1,66 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hand Tracking Image</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    video, canvas { position: absolute; top: 0; left: 0; }
-    #handImage {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      display: none;
-      transform: translate(-50%, -50%);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hand Tracker</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #000; }
+  #video {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  #handImage {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    display: none;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+</style>
 </head>
 <body>
-  <video id="video" autoplay playsinline width="640" height="480" style="display:none;"></video>
-  <img id="handImage" src="https://i.imgur.com/7yUvePI.png" alt="hand tracker">
-  
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
 
-  <script>
-    const video = document.getElementById('video');
-    const handImage = document.getElementById('handImage');
+<video id="video" autoplay playsinline></video>
+<img id="handImage" src="https://i.imgur.com/7yUvePI.png" alt="Hand Tracker">
 
-    async function setupCamera() {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-      return new Promise(resolve => {
-        video.onloadedmetadata = () => { resolve(video); };
-      });
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+
+<script>
+const video = document.getElementById('video');
+const handImage = document.getElementById('handImage');
+
+async function setupCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    await new Promise(resolve => video.onloadedmetadata = resolve);
+    video.play();
+  } catch(err) {
+    alert("Camera access denied or not supported: " + err);
+  }
+}
+
+async function main() {
+  await setupCamera();
+  const model = await handpose.load();
+  console.log("HandPose model loaded");
+
+  async function detectHands() {
+    const predictions = await model.estimateHands(video, true);
+
+    if (predictions.length > 0) {
+      const wrist = predictions[0].landmarks[0]; // wrist coordinates
+      const [x, y] = wrist;
+
+      // scale video coords to screen size
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      const scaledX = x / videoWidth * screenWidth;
+      const scaledY = y / videoHeight * screenHeight;
+
+      handImage.style.left = scaledX + 'px';
+      handImage.style.top = scaledY + 'px';
+      handImage.style.display = 'block';
+    } else {
+      handImage.style.display = 'none';
     }
 
-    async function main() {
-      await setupCamera();
-      const model = await handpose.load();
-      console.log("HandPose model loaded");
+    requestAnimationFrame(detectHands);
+  }
 
-      async function detectHands() {
-        const predictions = await model.estimateHands(video, true);
-        
-        if (predictions.length > 0) {
-          // Get the coordinates of the wrist (first keypoint)
-          const wrist = predictions[0].landmarks[0];
-          handImage.style.left = wrist[0] + 'px';
-          handImage.style.top = wrist[1] + 'px';
-          handImage.style.display = 'block';
-        } else {
-          handImage.style.display = 'none';
-        }
+  detectHands();
+}
 
-        requestAnimationFrame(detectHands);
-      }
-
-      detectHands();
-    }
-
-    main();
-  </script>
+main();
+</script>
 </body>
 </html>
