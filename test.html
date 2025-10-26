@@ -3,86 +3,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hand Tracker</title>
+<title>Hand Tracker Interactive</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #000; }
+  body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
   #video {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     object-fit: cover;
     z-index: 1;
+    transform: scaleX(1);
   }
-  #handImage {
+  #handContent {
     position: absolute;
-    width: 100px;
-    height: 100px;
     display: none;
     transform: translate(-50%, -50%);
     z-index: 2;
+    font-size: 30px;
+    color: #ff0;
+    user-select: none;
+    pointer-events: none;
   }
+  #controls {
+    position: absolute;
+    top: 10px; left: 10px;
+    z-index: 3;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+  }
+  #controls input { margin-top: 5px; display: block; }
 </style>
 </head>
 <body>
 
 <video id="video" autoplay playsinline></video>
-<img id="handImage" src="https://i.imgur.com/7yUvePI.png" alt="Hand Tracker">
+<div id="handContent">🤚</div>
 
-<!-- TensorFlow.js -->
+<div id="controls">
+  <button id="flipBtn">Flip Camera</button>
+  <input type="file" id="imageUpload" accept="image/*">
+  <input type="text" id="textInput" placeholder="Enter text to track">
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
 
 <script>
-const video = document.getElementById('video');
-const handImage = document.getElementById('handImage');
+let video = document.getElementById('video');
+let handContent = document.getElementById('handContent');
+let flipBtn = document.getElementById('flipBtn');
+let imageUpload = document.getElementById('imageUpload');
+let textInput = document.getElementById('textInput');
 
+let currentStream = null;
+let usingFrontCamera = false;
+let handposeModel = null;
+
+// Setup camera
 async function setupCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+  }
+
+  const constraints = {
+    video: { facingMode: usingFrontCamera ? "user" : "environment" }
+  };
+
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    video.srcObject = stream;
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = currentStream;
     await new Promise(resolve => video.onloadedmetadata = resolve);
     video.play();
+
+    // Mirror video if using front camera
+    video.style.transform = usingFrontCamera ? "scaleX(-1)" : "scaleX(1)";
   } catch(err) {
     alert("Camera access denied or not supported: " + err);
   }
 }
 
-async function main() {
-  await setupCamera();
-  const model = await handpose.load();
-  console.log("HandPose model loaded");
-
-  async function detectHands() {
-    const predictions = await model.estimateHands(video, true);
-
-    if (predictions.length > 0) {
-      const wrist = predictions[0].landmarks[0]; // wrist coordinates
-      const [x, y] = wrist;
-
-      // scale video coords to screen size
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-
-      const scaledX = x / videoWidth * screenWidth;
-      const scaledY = y / videoHeight * screenHeight;
-
-      handImage.style.left = scaledX + 'px';
-      handImage.style.top = scaledY + 'px';
-      handImage.style.display = 'block';
-    } else {
-      handImage.style.display = 'none';
-    }
-
-    requestAnimationFrame(detectHands);
-  }
-
+// Load HandPose model
+async function loadModel() {
+  handposeModel = await handpose.load();
+  console.log("HandPose loaded");
   detectHands();
 }
 
-main();
+// Hand detection loop
+async function detectHands() {
+  if (!handposeModel) return;
+
+  const predictions = await handposeModel.estimateHands(video, true);
+  if (predictions.length > 0) {
+    const wrist = predictions[0].landmarks[0];
+    const [x, y] = wrist;
+
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    const scaledX = x / videoWidth * screenWidth;
+    const scaledY = y / videoHeight * screenHeight;
+
+    handContent.style.left = scaledX + 'px';
+    handContent.style.top = scaledY + 'px';
+    handContent.style.display = 'block';
+  } else {
+    handContent.style.display = 'none';
+  }
+
+  requestAnimationFrame(detectHands);
+}
+
+// Flip camera button
+flipBtn.addEventListener('click', async () => {
+  usingFrontCamera = !usingFrontCamera;
+  await setupCamera();
+});
+
+// Upload image
+imageUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  handContent.innerHTML = `<img src="${url}" style="width:80px;height:80px;">`;
+});
+
+// Text input
+textInput.addEventListener('input', (e) => {
+  const text = e.target.value;
+  if (text) {
+    handContent.innerHTML = text;
+  } else {
+    handContent.innerHTML = '🤚'; // default hand emoji
+  }
+});
+
+// Initialize
+setupCamera().then(loadModel);
 </script>
+
 </body>
 </html>
